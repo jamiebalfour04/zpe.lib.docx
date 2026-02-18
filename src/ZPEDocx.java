@@ -27,7 +27,7 @@ public class ZPEDocx extends ZPEStructure {
     super(z, parent, name);
 
     addNativeMethod("open", new open_Command());
-    addNativeMethod("new_file", new new_Command());
+    addNativeMethod("new_file", new new_file_Command());
     addNativeMethod("save", new save_Command());
     addNativeMethod("close", new close_Command());
 
