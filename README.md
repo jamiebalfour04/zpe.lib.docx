@@ -4,122 +4,53 @@
   This is the official DOCX plugin for ZPE.
 </p>
 
+<p>
+  The plugin provides support for creating, reading and modifying .docx files directly from ZPE.
+</p>
+
 <h2>Installation</h2>
+
 <p>
-  Place <code>zpe.lib.docx.jar</code> in your ZPE plugins folder and restart ZPE.
+  Place <strong>zpe.lib.docx.jar</strong> in your ZPE native-plugins folder and restart ZPE.
 </p>
 
-<h2>Functions</h2>
 <p>
-  This plugin does not expose any global functions. All functionality is provided via the <code>docx</code> object.
+  You can also download with the ZULE Package Manager by using:
+</p>
+<p>
+  <code>zpe --zule install zpe.lib.docx.jar</code>
 </p>
 
-<table>
-  <thead>
-    <tr>
-      <th>Function</th>
-      <th>Parameters</th>
-      <th>Returns</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td colspan="4"><em>No functions.</em></td>
-    </tr>
-  </tbody>
-</table>
+<h2>Documentation</h2>
 
-<h2>Objects</h2>
+<p>
+  Full documentation, examples and API reference are available here:
+</p>
 
-<table>
-  <thead>
-    <tr>
-      <th>Method</th>
-      <th>Parameters</th>
-      <th>Returns</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th colspan="4"><code>docx</code></th>
-    </tr>
-
-    <tr>
-      <td><code>new_file</code></td>
-      <td><code>()</code></td>
-      <td><code>bool</code></td>
-      <td>Creates a new blank DOCX document in memory.</td>
-    </tr>
-
-    <tr>
-      <td><code>open</code></td>
-      <td><code>(text path)</code></td>
-      <td><code>bool</code></td>
-      <td>Opens a DOCX document from disk.</td>
-    </tr>
-
-    <tr>
-      <td><code>save</code></td>
-      <td><code>(text path)</code></td>
-      <td><code>bool</code></td>
-      <td>Saves the current DOCX document to disk.</td>
-    </tr>
-
-    <tr>
-      <td><code>close</code></td>
-      <td><code>()</code></td>
-      <td><code>bool</code></td>
-      <td>Closes the document and releases resources. Safe to call multiple times.</td>
-    </tr>
-
-    <tr>
-      <td><code>is_open</code></td>
-      <td><code>()</code></td>
-      <td><code>bool</code></td>
-      <td>Returns <code>true</code> if the document is currently open in memory.</td>
-    </tr>
-
-    <tr>
-      <td><code>add_paragraph</code></td>
-      <td><code>(text text)</code></td>
-      <td><code>int</code></td>
-      <td>Adds a paragraph containing the given text. Returns the paragraph index (0-based).</td>
-    </tr>
-
-    <tr>
-      <td><code>add_heading</code></td>
-      <td><code>(text text, int level)</code></td>
-      <td><code>int</code></td>
-      <td>Adds a heading paragraph (levels 1–6). Returns the paragraph index (0-based).</td>
-    </tr>
-
-    <tr>
-      <td><code>replace_all</code></td>
-      <td><code>(text find, text replace)</code></td>
-      <td><code>int</code></td>
-      <td>Replaces all occurrences of <code>find</code> with <code>replace</code> in paragraph text. Returns the number of replacements made.</td>
-    </tr>
-  </tbody>
-</table>
+<p>
+  <a href="https://www.jamiebalfour.scot/projects/zpe/documentation/plugins/zpe.lib.docx/" target="_blank">
+    View the complete documentation
+  </a>
+</p>
 
 <h2>Example</h2>
 
-<pre><code>import "docx"
+<pre>
+import "docx"
 
 d = docx()
-d.new()
+d.new_file()
 
 d.add_heading("My Document", 1)
 d.add_paragraph("Hello from ZPE!")
 
 d.save("output.docx")
 d.close()
-</code></pre>
+</pre>
 
 <h2>Notes</h2>
+
 <ul>
-  <li>This plugin currently targets <code>.docx</code> only (not legacy <code>.doc</code>).</li>
-  <li><code>replace_all</code> works best on simple documents; some Word documents split text across runs, which may reduce replacement coverage in certain cases.</li>
+  <li>This plugin supports .docx files only.</li>
+  <li>Requires Apache POI (bundled within the plugin).</li>
 </ul>
