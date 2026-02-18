@@ -36,9 +36,8 @@
 <h2>Example</h2>
 
 <pre>
-import "docx"
 
-d = docx()
+d = new docx()
 d.new_file()
 
 d.add_heading("My Document", 1)
