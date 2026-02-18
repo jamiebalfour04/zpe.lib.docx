@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="zpe.lib.docx">
+    <output-path>$PROJECT_DIR$/build</output-path>
+    <root id="archive" name="zpe.lib.docx.jar">
+      <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-5.4.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-ooxml-5.4.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-ooxml-full-5.4.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
