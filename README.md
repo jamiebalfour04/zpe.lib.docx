@@ -37,6 +37,8 @@
 
 <pre>
 
+import "zpe.lib.docx"
+
 d = new docx()
 d.new_file()
 
