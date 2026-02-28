@@ -40,13 +40,13 @@
 import "zpe.lib.docx"
 
 d = new docx()
-d.new_file()
+d->new_file()
 
-d.add_heading("My Document", 1)
-d.add_paragraph("Hello from ZPE!")
+d->add_heading("My Document", 1)
+d->add_paragraph("Hello from ZPE!")
 
-d.save("output.docx")
-d.close()
+d->save("output.docx")
+d->close()
 </pre>
 
 <h2>Notes</h2>
