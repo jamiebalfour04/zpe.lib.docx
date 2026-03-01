@@ -1,6 +1,12 @@
 <component name="ArtifactManager">
   <artifact type="jar" build-on-make="true" name="zpe.lib.docx">
     <output-path>$PROJECT_DIR$/build</output-path>
+    <properties id="ant-postprocessing">
+      <options>
+        <file>file://$PROJECT_DIR$/build.ant</file>
+        <target>build</target>
+      </options>
+    </properties>
     <root id="archive" name="zpe.lib.docx.jar">
       <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-5.4.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-ooxml-5.4.1.jar" path-in-jar="/" />
@@ -11,6 +17,8 @@
       <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/curvesapi-1.08.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/log4j-core-2.24.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/xmlbeans-5.3.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/Sync/Programs/JARs/poi-ooxml-schemas-4.1.2.jar" path-in-jar="/" />
+      <element id="module-output" name="zpe.lib.docx" />
     </root>
   </artifact>
 </component>

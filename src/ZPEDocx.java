@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import jamiebalfour.zpe.core.YASSByteCodes;
 import jamiebalfour.zpe.types.ZPENumber;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -11,11 +12,22 @@ import jamiebalfour.generic.JBBinarySearchTree;
 import jamiebalfour.zpe.core.ZPEObject;
 import jamiebalfour.zpe.core.ZPERuntimeEnvironment;
 import jamiebalfour.zpe.core.ZPEStructure;
+import jamiebalfour.zpe.exceptions.ZPERuntimeException;
+import jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod;
 import jamiebalfour.zpe.interfaces.ZPEPropertyWrapper;
 import jamiebalfour.zpe.interfaces.ZPEType;
 import jamiebalfour.zpe.types.ZPEBoolean;
 import jamiebalfour.zpe.types.ZPEString;
 
+/**
+ * ZPEDocx
+ *
+ * Notes:
+ * - Parameter types use ZPE's canonical names: string/number/mixed/map/list/boolean.
+ * - Where methods can fail, they return boolean false (i.e. mixed return at runtime: number|boolean, etc.).
+ * - Fixed: new_file native method name mismatch (was returning "new").
+ * - Permissions: file I/O is 3, in-memory operations are 0.
+ */
 public class ZPEDocx extends ZPEStructure {
 
   private static final long serialVersionUID = 3384128892123301192L;
@@ -39,67 +51,39 @@ public class ZPEDocx extends ZPEStructure {
 
   private void ensureOpen() {
     if (doc == null || closed) {
-      // You likely have a standard runtime error mechanism; adjust to your project.
-      throw new RuntimeException("DOCX document is not open.");
+      throw new ZPERuntimeException("DOCX document is not open.");
     }
   }
 
-  // docx.open(path)
-  public class open_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.open(path) => boolean
+  public class open_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
       try {
-        String path = ((ZPEString) parameters.get("path")).toString();
-        FileInputStream fis = new FileInputStream(path);
-        doc = new XWPFDocument(fis);
-        fis.close();
+        String path = parameters.get("path").toString();
+
+        try (FileInputStream fis = new FileInputStream(path)) {
+          doc = new XWPFDocument(fis);
+        }
+
         closed = false;
         return new ZPEBoolean(true);
-      } catch (IOException ex) {
+      } catch (Exception ex) {
+        doc = null;
+        closed = true;
         return new ZPEBoolean(false);
       }
     }
 
     @Override
     public String[] getParameterNames() {
-      return new String[] { "path" };
+      return new String[]{"path"};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] { "text" };
-    }
-
-    @Override
-    public int getRequiredPermissionLevel() {
-      return 3; // same as your serial plugin; bump if you treat file access differently
-    }
-
-    @Override
-    public String getName() {
-      return "open";
-    }
-  }
-
-  // docx.new()
-  public class new_file_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
-
-    @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
-      doc = new XWPFDocument();
-      closed = false;
-      return new ZPEBoolean(true);
-    }
-
-    @Override
-    public String[] getParameterNames() {
-      return new String[] {};
-    }
-
-    @Override
-    public String[] getParameterTypes() {
-      return new String[] {};
+      return new String[]{"string"};
     }
 
     @Override
@@ -109,35 +93,85 @@ public class ZPEDocx extends ZPEStructure {
 
     @Override
     public String getName() {
-      return "new";
+      return "open";
+    }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE};
     }
   }
 
-  // docx.save(path)
-  public class save_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.new_file() => boolean
+  public class new_file_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
-      ensureOpen();
       try {
-        String path = ((ZPEString) parameters.get("path")).toString();
-        FileOutputStream fos = new FileOutputStream(path);
-        doc.write(fos);
-        fos.close();
+        doc = new XWPFDocument();
+        closed = false;
         return new ZPEBoolean(true);
-      } catch (IOException ex) {
+      } catch (Exception e) {
+        doc = null;
+        closed = true;
         return new ZPEBoolean(false);
       }
     }
 
     @Override
     public String[] getParameterNames() {
-      return new String[] { "path" };
+      return new String[]{};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] { "text" };
+      return new String[]{};
+    }
+
+    @Override
+    public int getRequiredPermissionLevel() {
+      return 0;
+    }
+
+    @Override
+    public String getName() {
+      // FIX: must match the name registered via addNativeMethod("new_file", ...)
+      return "new_file";
+    }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE};
+    }
+  }
+
+  // docx.save(path) => boolean
+  public class save_Command implements ZPEObjectNativeMethod {
+
+    @Override
+    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+      try {
+        ensureOpen();
+
+        String path = parameters.get("path").toString();
+        try (FileOutputStream fos = new FileOutputStream(path)) {
+          doc.write(fos);
+          fos.flush();
+        }
+        return new ZPEBoolean(true);
+      } catch (Exception ex) {
+        return new ZPEBoolean(false);
+      }
+    }
+
+    @Override
+    public String[] getParameterNames() {
+      return new String[]{"path"};
+    }
+
+    @Override
+    public String[] getParameterTypes() {
+      return new String[]{"string"};
     }
 
     @Override
@@ -149,14 +183,20 @@ public class ZPEDocx extends ZPEStructure {
     public String getName() {
       return "save";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE};
+    }
   }
 
-  // docx.close()
-  public class close_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.close() => boolean
+  public class close_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
       if (doc == null || closed) return new ZPEBoolean(true);
+
       try {
         doc.close();
         closed = true;
@@ -168,12 +208,12 @@ public class ZPEDocx extends ZPEStructure {
 
     @Override
     public String[] getParameterNames() {
-      return new String[] {};
+      return new String[]{};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] {};
+      return new String[]{};
     }
 
     @Override
@@ -185,10 +225,15 @@ public class ZPEDocx extends ZPEStructure {
     public String getName() {
       return "close";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE};
+    }
   }
 
-  // docx.is_open()
-  public class is_open_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.is_open() => boolean
+  public class is_open_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
@@ -197,157 +242,194 @@ public class ZPEDocx extends ZPEStructure {
 
     @Override
     public String[] getParameterNames() {
-      return new String[] {};
+      return new String[]{};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] {};
+      return new String[]{};
     }
 
     @Override
     public int getRequiredPermissionLevel() {
-      return 3;
+      return 0;
     }
 
     @Override
     public String getName() {
       return "is_open";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE};
+    }
   }
 
-  // docx.add_paragraph(text) -> paragraphIndex (0-based)
-  public class add_paragraph_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.add_paragraph(text) => number | boolean(false)
+  public class add_paragraph_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
-      ensureOpen();
-      String text = ((ZPEString) parameters.get("text")).toString();
+      try {
+        ensureOpen();
 
-      XWPFParagraph p = doc.createParagraph();
-      XWPFRun r = p.createRun();
-      r.setText(text);
+        String text = parameters.get("text").toString();
+        XWPFParagraph p = doc.createParagraph();
+        XWPFRun r = p.createRun();
+        r.setText(text);
 
-      // Return index for later styling (if you add it)
-      int idx = doc.getParagraphs().size() - 1;
-      return new ZPENumber(idx);
+        int idx = doc.getParagraphs().size() - 1;
+        return new ZPENumber(idx);
+      } catch (Exception e) {
+        return new ZPEBoolean(false);
+      }
     }
 
     @Override
     public String[] getParameterNames() {
-      return new String[] { "text" };
+      return new String[]{"text"};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] { "text" };
+      return new String[]{"string"};
     }
 
     @Override
     public int getRequiredPermissionLevel() {
-      return 3;
+      return 0;
     }
 
     @Override
     public String getName() {
       return "add_paragraph";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE, YASSByteCodes.NUMBER_TYPE};
+    }
   }
 
-  // docx.add_heading(text, level) -> paragraphIndex
-  public class add_heading_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.add_heading(text, level) => number | boolean(false)
+  public class add_heading_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
-      ensureOpen();
-      String text = ((ZPEString) parameters.get("text")).toString();
-      int level = ((ZPENumber) parameters.get("level")).intValue();
+      try {
+        ensureOpen();
 
-      if (level < 1) level = 1;
-      if (level > 6) level = 6;
+        String text = parameters.get("text").toString();
+        int level = (int) Double.parseDouble(parameters.get("level").toString());
 
-      XWPFParagraph p = doc.createParagraph();
-      // Word heading styles are typically "Heading1".."Heading6"
-      p.setStyle("Heading" + level);
+        if (level < 1) level = 1;
+        if (level > 6) level = 6;
 
-      XWPFRun r = p.createRun();
-      r.setText(text);
+        XWPFParagraph p = doc.createParagraph();
+        p.setStyle("Heading" + level);
 
-      int idx = doc.getParagraphs().size() - 1;
-      return new ZPENumber(idx);
+        XWPFRun r = p.createRun();
+        r.setText(text);
+
+        int idx = doc.getParagraphs().size() - 1;
+        return new ZPENumber(idx);
+      } catch (Exception e) {
+        return new ZPEBoolean(false);
+      }
     }
 
     @Override
     public String[] getParameterNames() {
-      return new String[] { "text", "level" };
+      return new String[]{"text", "level"};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] { "text", "int" };
+      return new String[]{"string", "number"};
     }
 
     @Override
     public int getRequiredPermissionLevel() {
-      return 3;
+      return 0;
     }
 
     @Override
     public String getName() {
       return "add_heading";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.BOOLEAN_TYPE, YASSByteCodes.NUMBER_TYPE};
+    }
   }
 
-  // docx.replace_all(find, replace) -> count
-  // Basic implementation: replaces in runs within paragraphs.
-  // Note: Word can split text across runs, so this won’t catch every possible case.
-  public class replace_all_Command implements jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod {
+  // docx.replace_all(find, replace) => number | boolean(false)
+  // Note: Word can split text across runs; this is "best effort" replacement within runs.
+  public class replace_all_Command implements ZPEObjectNativeMethod {
 
     @Override
     public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
-      ensureOpen();
-      String find = ((ZPEString) parameters.get("find")).toString();
-      String repl = ((ZPEString) parameters.get("replace")).toString();
+      try {
+        ensureOpen();
 
-      int count = 0;
+        String find = parameters.get("find").toString();
+        String repl = parameters.get("replace").toString();
 
-      for (XWPFParagraph p : doc.getParagraphs()) {
-        for (XWPFRun r : p.getRuns()) {
-          String t = r.getText(0);
-          if (t == null) continue;
-          if (!t.contains(find)) continue;
+        if (find == null || find.isEmpty()) return new ZPENumber(0);
 
-          int beforeLen = t.length();
-          String newText = t.replace(find, repl);
+        int count = 0;
 
-          // crude “count occurrences”:
-          count += (beforeLen - newText.length()) / Math.max(1, find.length());
+        for (XWPFParagraph p : doc.getParagraphs()) {
+          for (XWPFRun r : p.getRuns()) {
+            String t = r.getText(0);
+            if (t == null) continue;
+            if (!t.contains(find)) continue;
 
-          r.setText(newText, 0);
+            // count occurrences in this run
+            int from = 0;
+            while (true) {
+              int at = t.indexOf(find, from);
+              if (at < 0) break;
+              count++;
+              from = at + find.length();
+            }
+
+            r.setText(t.replace(find, repl), 0);
+          }
         }
-      }
 
-      return new ZPENumber(count);
+        return new ZPENumber(count);
+      } catch (Exception e) {
+        return new ZPEBoolean(false);
+      }
     }
 
     @Override
     public String[] getParameterNames() {
-      return new String[] { "find", "replace" };
+      return new String[]{"find", "replace"};
     }
 
     @Override
     public String[] getParameterTypes() {
-      return new String[] { "text", "text" };
+      return new String[]{"string", "string"};
     }
 
     @Override
     public int getRequiredPermissionLevel() {
-      return 3;
+      return 0;
     }
 
     @Override
     public String getName() {
       return "replace_all";
     }
+
+    @Override
+    public byte[] returnTypes() {
+      return new byte[]{YASSByteCodes.NUMBER_TYPE};
+    }
+
   }
 }
