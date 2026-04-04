@@ -1,3 +1,4 @@
+import jamiebalfour.zpe.core.ZPEModule;
 import jamiebalfour.zpe.core.ZPEStructure;
 import jamiebalfour.zpe.core.interfaces.ZPECustomFunction;
 import jamiebalfour.zpe.core.interfaces.ZPELibrary;
@@ -20,6 +21,11 @@ public class Plugin implements ZPELibrary {
   }
 
   @Override
+  public Map<String, ZPEModule> getModules() {
+    return new HashMap<>();
+  }
+
+  @Override
   public boolean supportsWindows() {
     return true;
   }
@@ -36,7 +42,7 @@ public class Plugin implements ZPELibrary {
 
   @Override
   public String getName() {
-    return "libDocx";
+    return "libDOCX";
   }
 
   @Override
