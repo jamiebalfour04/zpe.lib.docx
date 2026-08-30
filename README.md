@@ -11,7 +11,14 @@
 <h2>Installation</h2>
 
 <p>
-  Place <strong>zpe.lib.docx.jar</strong> in your ZPE native-plugins folder and restart ZPE.
+  Place <strong>zpe.lib.docx.jar</strong> in your ZPE plugins folder and restart ZPE.
+</p>
+
+<p>
+  For ZPEX, build the native plugin with <code>./build-native.sh</code>, then place
+  <strong>zpe.lib.docx.dylib</strong> (macOS), <strong>zpe.lib.docx.so</strong> (Linux),
+  or <strong>zpe.lib.docx.dll</strong> (Windows) in ZPE's <strong>native-plugins</strong> folder.
+  ZPE and ZPEX then use the same import statement shown below.
 </p>
 
 <p>
@@ -39,14 +46,14 @@
 
 import "zpe.lib.docx"
 
-d = new docx()
-d->new_file()
+$document = new docx()
+$document->new_file()
 
-d->add_heading("My Document", 1)
-d->add_paragraph("Hello from ZPE!")
+$document->add_heading("My Document", 1)
+$document->add_paragraph("Hello from ZPE!")
 
-d->save("output.docx")
-d->close()
+$document->save("output.docx")
+$document->close()
 </pre>
 
 <h2>Notes</h2>
@@ -54,4 +61,5 @@ d->close()
 <ul>
   <li>This plugin supports .docx files only.</li>
   <li>Requires Apache POI (bundled within the plugin).</li>
+  <li>The native ZPEX build requires GraalVM and the dependency versions listed in <code>build-native.sh</code>.</li>
 </ul>

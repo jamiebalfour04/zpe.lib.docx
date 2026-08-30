@@ -1,10 +1,11 @@
-import jamiebalfour.zpe.core.ZPEModule;
-import jamiebalfour.zpe.core.ZPEStructure;
+import jamiebalfour.zpe.core.*;
 import jamiebalfour.zpe.core.interfaces.ZPECustomFunction;
 import jamiebalfour.zpe.core.interfaces.ZPELibrary;
+import jamiebalfour.zpe.core.interfaces.ZPEPropertyWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public class Plugin implements ZPELibrary {
 
@@ -14,9 +15,9 @@ public class Plugin implements ZPELibrary {
   }
 
   @Override
-  public Map<String, Class<? extends ZPEStructure>> getObjects() {
-    Map m = new HashMap<>();
-    m.put("docx", ZPEDocx.class);
+  public Map<String, BiFunction<ZPERuntimeEnvironment, ZPEPropertyWrapper, ZPEObject>> getObjects() {
+    Map<String, BiFunction<ZPERuntimeEnvironment, ZPEPropertyWrapper, ZPEObject>> m = new HashMap<>();
+    m.put("docx", (runtime, parent) -> new ZPEDocx(runtime, parent, "docx"));
     return m;
   }
 
@@ -47,7 +48,7 @@ public class Plugin implements ZPELibrary {
 
   @Override
   public String getVersionInfo() {
-    return "1.0";
+    return "1.1";
   }
 
 }

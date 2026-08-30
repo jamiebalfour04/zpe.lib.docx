@@ -1,23 +1,23 @@
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 import jamiebalfour.zpe.core.YASSByteCodes;
-import jamiebalfour.zpe.types.ZPENumber;
+import jamiebalfour.zpe.core.types.ZPENumber;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
-import jamiebalfour.generic.JBBinarySearchTree;
 import jamiebalfour.zpe.core.ZPEObject;
 import jamiebalfour.zpe.core.ZPERuntimeEnvironment;
 import jamiebalfour.zpe.core.ZPEStructure;
-import jamiebalfour.zpe.exceptions.ZPERuntimeException;
-import jamiebalfour.zpe.interfaces.ZPEObjectNativeMethod;
-import jamiebalfour.zpe.interfaces.ZPEPropertyWrapper;
-import jamiebalfour.zpe.interfaces.ZPEType;
-import jamiebalfour.zpe.types.ZPEBoolean;
-import jamiebalfour.zpe.types.ZPEString;
+import jamiebalfour.zpe.core.exceptions.ZPERuntimeException;
+import jamiebalfour.zpe.core.interfaces.ZPEObjectNativeMethod;
+import jamiebalfour.zpe.core.interfaces.ZPEPropertyWrapper;
+import jamiebalfour.zpe.core.interfaces.ZPEType;
+import jamiebalfour.zpe.core.types.ZPEBoolean;
+import jamiebalfour.zpe.core.types.ZPEString;
 
 /**
  * ZPEDocx
@@ -59,7 +59,7 @@ public class ZPEDocx extends ZPEStructure {
   public class open_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         String path = parameters.get("path").toString();
 
@@ -106,7 +106,7 @@ public class ZPEDocx extends ZPEStructure {
   public class new_file_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         doc = new XWPFDocument();
         closed = false;
@@ -149,7 +149,7 @@ public class ZPEDocx extends ZPEStructure {
   public class save_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         ensureOpen();
 
@@ -194,7 +194,7 @@ public class ZPEDocx extends ZPEStructure {
   public class close_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       if (doc == null || closed) return new ZPEBoolean(true);
 
       try {
@@ -236,7 +236,7 @@ public class ZPEDocx extends ZPEStructure {
   public class is_open_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       return new ZPEBoolean(doc != null && !closed);
     }
 
@@ -270,7 +270,7 @@ public class ZPEDocx extends ZPEStructure {
   public class add_paragraph_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         ensureOpen();
 
@@ -316,7 +316,7 @@ public class ZPEDocx extends ZPEStructure {
   public class add_heading_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         ensureOpen();
 
@@ -370,7 +370,7 @@ public class ZPEDocx extends ZPEStructure {
   public class replace_all_Command implements ZPEObjectNativeMethod {
 
     @Override
-    public ZPEType MainMethod(JBBinarySearchTree<String, ZPEType> parameters, ZPEObject parent) {
+    public ZPEType run(HashMap<String, ZPEType> parameters, ZPEObject parent) {
       try {
         ensureOpen();
 

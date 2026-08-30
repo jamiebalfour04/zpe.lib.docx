@@ -28,3 +28,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### ZPEX native build output ###
+/build/native/
+
+### Example output ###
+/zpex-output.docx
+~$*.docx

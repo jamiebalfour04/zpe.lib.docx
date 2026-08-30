@@ -1,0 +1,8 @@
+import "zpe.lib.docx"
+
+$document = new docx()
+$document->new_file()
+$document->add_heading("Created by ZPEX", 1)
+$document->add_paragraph("This document was produced by the native DOCX plugin.")
+$document->save("zpex-output.docx")
+$document->close()

@@ -1,0 +1,6 @@
+[
+  {
+    "name": "org.apache.logging.log4j.simple.SimpleLoggerContextFactory",
+    "allDeclaredConstructors": true
+  }
+]
