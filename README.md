@@ -22,6 +22,15 @@
 </p>
 
 <p>
+  For a self-contained ZenC executable, <code>./build-native.sh</code> also
+  builds <strong>libzpe.lib.docx.a</strong> and copies it into the example's
+  <strong>binary-plugins</strong> directory. You can then run
+  <code>zpe -c examples/native_docx.yas -o doco --binary</code>; the resulting
+  executable contains the DOCX implementation and does not require the plugin
+  dylib or an installed ZPE runtime.
+</p>
+
+<p>
   You can also download with the ZULE Package Manager by using:
 </p>
 <p>

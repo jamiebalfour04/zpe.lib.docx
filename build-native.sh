@@ -38,3 +38,11 @@ case "$(uname -s)" in
  *) OUTPUT="$BUILD_DIR/zpe.lib.docx.dll";;
 esac
 printf 'Built %s\n' "$OUTPUT"
+
+# ZenC --binary builds use a portable static ABI rather than the GraalVM
+# isolate ABI used by ZPEX's shared library.
+"${CXX:-c++}" -std=c++17 -O2 -c native-src/docx_static.cpp -o "$BUILD_DIR/docx_static.o"
+ar rcs "$BUILD_DIR/libzpe.lib.docx.a" "$BUILD_DIR/docx_static.o"
+mkdir -p examples/binary-plugins
+cp "$BUILD_DIR/libzpe.lib.docx.a" examples/binary-plugins/libzpe.lib.docx.a
+printf 'Built %s and copied it beside the native example\n' "$BUILD_DIR/libzpe.lib.docx.a"
