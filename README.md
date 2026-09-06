@@ -22,6 +22,12 @@
 </p>
 
 <p>
+  Every push builds the native ZPEX plugin for macOS ARM64, Windows x64 and
+  Linux x64 with GitHub Actions. The resulting platform libraries are available
+  as workflow artifacts.
+</p>
+
+<p>
   For a self-contained ZenC executable, <code>./build-native.sh</code> also
   builds <strong>libzpe.lib.docx.a</strong> and copies it into the example's
   <strong>binary-plugins</strong> directory. You can then run
