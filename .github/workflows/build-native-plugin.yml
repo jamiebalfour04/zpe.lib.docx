@@ -131,14 +131,14 @@ jobs:
         run: |
           cp README.md LICENSE release/zpe.lib.docx/
           cd release
-          zip -9 -r zpe.lib.docx-all-platforms.zip zpe.lib.docx
-          unzip -l zpe.lib.docx-all-platforms.zip
+          zip -9 -r zpe.lib.docx.zip zpe.lib.docx
+          unzip -l zpe.lib.docx.zip
 
       - name: Upload all-platform ZIP
         uses: actions/upload-artifact@v4
         with:
           name: zpe-lib-docx-all-platforms
-          path: release/zpe.lib.docx-all-platforms.zip
+          path: release/zpe.lib.docx.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -167,5 +167,5 @@ jobs:
           fi
           rsync -az --progress \
             -e "ssh -p $port -i $HOME/.ssh/docx_deploy -o IdentitiesOnly=yes" \
-            release/zpe.lib.docx-all-platforms.zip \
+            release/zpe.lib.docx.zip \
             "$SFTP_USERNAME@$SFTP_HOST:$SFTP_DESTINATION"
