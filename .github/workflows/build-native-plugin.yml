@@ -93,7 +93,7 @@ jobs:
           retention-days: 30
 
   package:
-    name: Package and deploy all platforms
+    name: Package and deploy zpe.lib.docx.zip
     needs:
       - jar
       - build
@@ -127,22 +127,22 @@ jobs:
           name: zpe-lib-docx-linux-x64
           path: release/zpe.lib.docx/native/linux-x64
 
-      - name: Assemble all-platform ZIP
+      - name: Assemble zpe.lib.docx.zip
         run: |
           cp README.md LICENSE release/zpe.lib.docx/
           cd release
           zip -9 -r zpe.lib.docx.zip zpe.lib.docx
           unzip -l zpe.lib.docx.zip
 
-      - name: Upload all-platform ZIP
+      - name: Upload zpe.lib.docx.zip
         uses: actions/upload-artifact@v4
         with:
-          name: zpe-lib-docx-all-platforms
+          name: zpe.lib.docx
           path: release/zpe.lib.docx.zip
           if-no-files-found: error
           retention-days: 30
 
-      - name: Deploy all-platform ZIP with rsync
+      - name: Deploy zpe.lib.docx.zip with rsync
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
