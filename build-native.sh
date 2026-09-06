@@ -3,21 +3,30 @@ set -euo pipefail
 GRAAL_HOME="${GRAAL_HOME:-${GRAALVM_HOME:-$HOME/.sdkman/candidates/java/current}}"
 JARS="${ZPE_DEPENDENCY_DIR:-$HOME/Sync/Programs/JARs}"
 BUILD_DIR="${BUILD_DIR:-build/native}"
+PLATFORM="$(uname -s)"
+if [[ "$PLATFORM" == MINGW* || "$PLATFORM" == MSYS* || "$PLATFORM" == CYGWIN* ]]; then
+  GRAAL_HOME="$(cygpath -u "$GRAAL_HOME")"
+fi
 # POI only requires the Log4j API. Deliberately omit log4j-core from the native
 # image: its runtime plugin discovery needs substantial GraalVM reflection
 # metadata and otherwise produces broken PatternLayout converter warnings.
 DEPENDENCIES=(poi-5.4.1.jar poi-ooxml-5.4.1.jar poi-ooxml-full-5.4.1.jar xmlbeans-5.3.0.jar commons-compress-1.27.1.jar commons-io-2.19.0.jar commons-collections4-4.4.jar log4j-api-2.24.3.jar curvesapi-1.08.jar)
-JAVAC="${JAVAC:-$GRAAL_HOME/bin/javac}"
-NATIVE_IMAGE="${NATIVE_IMAGE:-$GRAAL_HOME/bin/native-image}"
-if [ ! -x "$NATIVE_IMAGE" ] && command -v native-image >/dev/null 2>&1; then
+if [[ "$PLATFORM" == MINGW* || "$PLATFORM" == MSYS* || "$PLATFORM" == CYGWIN* ]]; then
+  JAVAC="${JAVAC:-$GRAAL_HOME/bin/javac.exe}"
+  NATIVE_IMAGE="${NATIVE_IMAGE:-$GRAAL_HOME/bin/native-image.cmd}"
+else
+  JAVAC="${JAVAC:-$GRAAL_HOME/bin/javac}"
+  NATIVE_IMAGE="${NATIVE_IMAGE:-$GRAAL_HOME/bin/native-image}"
+fi
+if [ ! -f "$NATIVE_IMAGE" ] && command -v native-image >/dev/null 2>&1; then
   NATIVE_IMAGE="$(command -v native-image)"
   JAVAC="$(command -v javac)"
 fi
-if [ ! -x "$NATIVE_IMAGE" ]; then
+if [ ! -f "$NATIVE_IMAGE" ]; then
   printf 'GraalVM native-image was not found. Set GRAAL_HOME or GRAALVM_HOME.\n' >&2
   exit 1
 fi
-case "$(uname -s)" in
+case "$PLATFORM" in
   MINGW*|MSYS*|CYGWIN*) CP_SEPARATOR=';' ;;
   *) CP_SEPARATOR=':' ;;
 esac
@@ -42,7 +51,7 @@ mkdir -p "$BUILD_DIR/classes"
   -H:IncludeResources='.*\.(xsb|xml|rels|properties)|META-INF/services/.*' \
   -H:-UnlockExperimentalVMOptions \
   DocxNativePlugin
-case "$(uname -s)" in
+case "$PLATFORM" in
  Darwin) [ -f "$BUILD_DIR/libzpe.lib.docx.dylib" ] && mv "$BUILD_DIR/libzpe.lib.docx.dylib" "$BUILD_DIR/zpe.lib.docx.dylib";OUTPUT="$BUILD_DIR/zpe.lib.docx.dylib";;
  Linux) [ -f "$BUILD_DIR/libzpe.lib.docx.so" ] && mv "$BUILD_DIR/libzpe.lib.docx.so" "$BUILD_DIR/zpe.lib.docx.so";OUTPUT="$BUILD_DIR/zpe.lib.docx.so";;
  MINGW*|MSYS*|CYGWIN*) OUTPUT="$BUILD_DIR/zpe.lib.docx.dll";;
