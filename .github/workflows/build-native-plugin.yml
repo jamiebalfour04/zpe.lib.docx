@@ -5,6 +5,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  jar:
+    name: JVM plugin JAR
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out zpe.lib.docx
+        uses: actions/checkout@v5
+
+      - name: Verify JVM plugin JAR
+        run: |
+          test -f build/zpe.lib.docx.jar
+          unzip -tq build/zpe.lib.docx.jar
+
+      - name: Upload JVM plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: zpe-lib-docx-jvm
+          path: build/zpe.lib.docx.jar
+          if-no-files-found: error
+          retention-days: 30
+
   build:
     name: ${{ matrix.name }}
     strategy:
@@ -70,3 +91,81 @@ jobs:
           path: ${{ matrix.output }}
           if-no-files-found: error
           retention-days: 30
+
+  package:
+    name: Package and deploy all platforms
+    needs:
+      - jar
+      - build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out zpe.lib.docx
+        uses: actions/checkout@v5
+
+      - name: Download JVM plugin
+        uses: actions/download-artifact@v5
+        with:
+          name: zpe-lib-docx-jvm
+          path: release/zpe.lib.docx
+
+      - name: Download macOS plugin
+        uses: actions/download-artifact@v5
+        with:
+          name: zpe-lib-docx-macos-arm64
+          path: release/zpe.lib.docx/native/macos-arm64
+
+      - name: Download Windows plugin
+        uses: actions/download-artifact@v5
+        with:
+          name: zpe-lib-docx-windows-x64
+          path: release/zpe.lib.docx/native/windows-x64
+
+      - name: Download Linux plugin
+        uses: actions/download-artifact@v5
+        with:
+          name: zpe-lib-docx-linux-x64
+          path: release/zpe.lib.docx/native/linux-x64
+
+      - name: Assemble all-platform ZIP
+        run: |
+          cp README.md LICENSE release/zpe.lib.docx/
+          cd release
+          zip -9 -r zpe.lib.docx-all-platforms.zip zpe.lib.docx
+          unzip -l zpe.lib.docx-all-platforms.zip
+
+      - name: Upload all-platform ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: zpe-lib-docx-all-platforms
+          path: release/zpe.lib.docx-all-platforms.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Deploy all-platform ZIP with rsync
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY }}
+          SFTP_HOST_KEY: ${{ secrets.SFTP_HOST_KEY }}
+          SFTP_DESTINATION: ${{ secrets.SFTP_DESTINATION_DOCX }}
+        run: |
+          test -n "$SFTP_HOST"
+          test -n "$SFTP_USERNAME"
+          test -n "$SFTP_PRIVATE_KEY"
+          test -n "$SFTP_HOST_KEY"
+          test -n "$SFTP_DESTINATION"
+          port="${SFTP_PORT:-22}"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%b\n' "$SFTP_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/docx_deploy"
+          printf '%b\n' "$SFTP_HOST_KEY" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/docx_deploy" "$HOME/.ssh/known_hosts"
+          if ! ssh-keygen -y -P "" -f "$HOME/.ssh/docx_deploy" > /dev/null; then
+            echo "::error::SFTP_PRIVATE_KEY is invalid or passphrase-protected."
+            exit 1
+          fi
+          rsync -az --progress \
+            -e "ssh -p $port -i $HOME/.ssh/docx_deploy -o IdentitiesOnly=yes" \
+            release/zpe.lib.docx-all-platforms.zip \
+            "$SFTP_USERNAME@$SFTP_HOST:$SFTP_DESTINATION"
