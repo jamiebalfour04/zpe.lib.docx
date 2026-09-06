@@ -48,7 +48,11 @@ mkdir -p "$BUILD_DIR/classes"
   -H:Name=zpe.lib.docx \
   -H:ConfigurationFileDirectories=native-config/generated \
   -H:ReflectionConfigurationFiles=native-config/reflect-config.json \
-  -H:IncludeResources='.*\.(xsb|xml|rels|properties)|META-INF/services/.*' \
+  -H:IncludeResources='.*[.]xsb' \
+  -H:IncludeResources='.*[.]xml' \
+  -H:IncludeResources='.*[.]rels' \
+  -H:IncludeResources='.*[.]properties' \
+  -H:IncludeResources='META-INF/services/.*' \
   -H:-UnlockExperimentalVMOptions \
   DocxNativePlugin
 case "$PLATFORM" in
